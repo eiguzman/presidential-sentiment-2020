@@ -1,0 +1,1 @@
+This folder contains images of the original project implemented in December 2025. Clusters were based on the full unfragmented speeches, giving more weight to large documents that very briefly mention COVID-19.

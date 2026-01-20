@@ -1,0 +1,1 @@
+This folder contains images of the most recent run of this project. Documents are split into sections of 250 words or less, showing differences in speech length (vertical dots denote longer speeches). Clusters differed from the original project and once again had to be hand-coded to match the LDA topics.
