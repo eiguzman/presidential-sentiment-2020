@@ -774,3 +774,58 @@ recall_class1 <- cm$byClass["Sensitivity"]
 
 cat("Precision for class 1:", precision_class1, "\n")
 cat("Recall for class 1:", recall_class1, "\n")
+
+##################
+#Chi-squared Test#
+##################
+
+# Define COVID-related topics
+covid_topics <- c("COVID-19", "Negative Campaigning (COVID)")
+
+# For Biden:
+biden_covid_counts <- biden_time_series %>%
+  mutate(Period = if_else(Date < as.Date("2020-02-11"), "Before", "After"),
+         COVID_related = if_else(TopicName %in% covid_topics, "Yes", "No")) %>%
+  group_by(Period, COVID_related) %>%
+  summarise(Count = n()) %>%
+  pivot_wider(names_from = COVID_related, values_from = Count, values_fill = 0)
+
+# Create contingency matrix
+biden_contingency <- matrix(
+  c(biden_covid_counts$Yes, biden_covid_counts$No),
+  nrow = 2,
+  byrow = TRUE,
+  dimnames = list(Period = c("Before", "After"),
+                  COVID_Related = c("Yes", "No"))
+)
+
+# Perform Chi-squared test for Biden
+biden_chi_test <- chisq.test(biden_contingency)
+
+# Output the result
+print("Chi-squared Test for Biden's Speeches:")
+print(biden_chi_test)
+
+# For Trump:
+trump_covid_counts <- trump_time_series %>%
+  mutate(Period = if_else(Date < as.Date("2020-02-11"), "Before", "After"),
+         COVID_related = if_else(TopicName %in% covid_topics, "Yes", "No")) %>%
+  group_by(Period, COVID_related) %>%
+  summarise(Count = n()) %>%
+  pivot_wider(names_from = COVID_related, values_from = Count, values_fill = 0)
+
+# Create contingency matrix
+trump_contingency <- matrix(
+  c(trump_covid_counts$Yes, trump_covid_counts$No),
+  nrow = 2,
+  byrow = TRUE,
+  dimnames = list(Period = c("Before", "After"),
+                  COVID_Related = c("Yes", "No"))
+)
+
+# Perform Chi-squared test for Trump
+trump_chi_test <- chisq.test(trump_contingency)
+
+# Output the result
+print("Chi-squared Test for Trump's Speeches:")
+print(trump_chi_test)

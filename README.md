@@ -1,6 +1,5 @@
 # presidential-sentiment-2020
 A sentiment analysis project on presidential candidate speeches during the 2020 election.
-*Originally a final project for DSC 161 at the University of California, San Diego*
 
 ## Abstract
 
@@ -89,32 +88,115 @@ The goal of this section is to analyze changes in political discussion by each c
 
 ![Joe Biden's Speeches categorized by topic](img/biden_sentiment_clustered.png)
 <div style="text-align: center;">
-<small><i>Figure 7: Joe Biden's Speeches categorized by topic</i></small>
+<small><i>Figure 7: Joe Biden's speeches categorized by topic</i></small>
 </div>
 <br/>
 
 ![Joe Biden's Speeches related to COVID have been highlighted](img/biden_covid_topics.png)
 <div style="text-align: center;">
-<small><i>Figure 8: Joe Biden's Speeches related to COVID have been highlighted</i></small>
+<small><i>Figure 8: Joe Biden's speeches related to COVID have been highlighted</i></small>
 </div>
 <br/>
 
 ![Donald Trump's Speeches categorized by topic](img/trump_sentiment_clustered.png)
 <div style="text-align: center;">
-<small><i>Figure 9: Donald Trump's Speeches categorized by topic</i></small>
+<small><i>Figure 9: Donald Trump's speeches categorized by topic</i></small>
 </div>
 <br/>
 
 ![Donald Trump's Speeches related to COVID have been highlighted](img/trump_covid_topics.png)
 <div style="text-align: center;">
-<small><i>Figure 10: Donald Trump's Speeches related to COVID have been highlighted</i></small>
+<small><i>Figure 10: Donald Trump's speeches related to COVID have been highlighted</i></small>
 </div>
 <br/>
 
-Topics directly related to COVID-19 are highlighted in their own graphs, showcasing how often the topic was brought up by each candidate. We notice a few interesting observations in these graphs. First, there are a few speeches in Joe Biden's cluster graph that are identified as being COVID-related, despite 
+Topics directly related to COVID-19 are highlighted in their own graphs, showcasing how often the topic was brought up by each candidate. We notice a few interesting observations in these graphs. First, there are a few speeches in Joe Biden's cluster graph that are identified as being COVID-related, despite Biden's first official statement on COVID-19 being broadcast on March 12, 2020. These are misclassifications by our LDA, incorrectly classified as being COVID-related due to using words such as epidemic (most of these misclassifications were actually discussing the *guns and mass shootings* epidemic). These mistakes, although easily fixable by hand, are left in to show that these models are not perfect, and that even with these misclassifications, they are not significantly damaging to the accuracy of our results. Below we also display the results from the original project, where clusters were generated based on the entire speech corpus.
+
+![Original topic clusters of Biden's speeches](img/images/biden_sentiment_clustered.png)
+<div style="text-align: center;">
+<small><i>Figure 11: Original topic clusters of Biden's speeches</i></small>
+</div>
+<br/>
+
+![Original topic clusters of Trump's speeches](img/images/trump_sentiment_clustered.png)
+<div style="text-align: center;">
+<small><i>Figure 12: Original topic clusters of Trump's speeches</i></small>
+</div>
+<br/>
+
+Now we can identify why Donald Trump's speeches are overwhelmingly positive. When speeches are clustered as a whole, the primary topic of many of Trump's speeches involve the public opinion. Looking closer at the text documents reveal that in most speeches, Trump will speak positively about himself and of his accomplishments the past four years as president, as if it was the opinion of the average voter. Additionally, Trump's campaign slogan "Make America **Great** Again" aids in improving the sentiment score each time the phrase is mentioned.
+
+Alternatively, Joe Biden's speeches cluster closer to the intercept due to "Negative Campaigning". Negative campaigning in presidential elections refers to the strategy of attacking or criticizing an opponent rather than promoting one's own policies and strengths. This approach aims to undermine an opponent's character, record, or credibility to sway voters by emphasizing their flaws or perceived weaknesses. While it can energize a candidate's base and draw attention to issues, negative campaigning often sparks controversy, potentially fostering voter cynicism or apathy. Despite criticisms of its divisiveness, many campaigns use negative tactics to diminish an opponent’s electability, making it a common feature of presidential elections.
+
+### Topic Prevalence
+
+Topic prevalence analysis involves quantifying how dominant specific topics are within a collection of documents over time or across different groups. This process typically begins with applying a topic modeling technique such as LDA to identify underlying thematic structures in the text data. Once a model is fit, each document receives a distribution of topics, indicating the proportion of content related to each theme. These proportions can be summarized, visualized, and compared across time or categories to understand trends, shifts, or the prominence of particular issues. In our case, we will focus on the prevalence of COVID-19 references in speeches over the course of the election cycle. By examining the proportion of specific topics within speeches, researchers can infer how candidates prioritize or shift focus on different themes throughout their campaigns or responses to events.
+
+The goal of this section is to understand how prevalent COVID-19 speeches were for each candidate after the observation date. First, after fitting LDA models for each candidate, the code assigns the most probable topic to each speech document and associates descriptive topic labels. It then constructs matrices of posterior topic probabilities for each speech, enabling the calculation of combined proportions of related COVID-19 topics by summing relevant topic columns. For example, 4 topics in Biden's speeches were COVID-related, while Trump's speeches only generated 1 topic. These proportions are added to the speech data, which is then merged across candidates for comparative visualization. The plotting segment uses `ggplot2` to create scatter plots and smoothed trend lines over time. This approach facilitates a clear understanding of thematic focus shifts within the speeches over the campaign timeline.
 
 ![Topic Prevalence of COVID over time](img/covid_prevalence_over_time.png)
 <div style="text-align: center;">
-<small><i>Figure 11: Topic Prevalence of COVID over time</i></small>
+<small><i>Figure 13: Topic Prevalence of COVID over time</i></small>
 </div>
 <br/>
+
+Once again we notice a few errors in our topic assignment methods. We can see in Figure 13 that there is one outlier before the observation date that is associated with one of Biden's speech segments. Drawing parallels from our previous explanation, we can safely consider this outlier not significant to changing the results of our hypothesis test. Additionally, we notice our most significant trend in this graph. We can infer from this graph that Joe Biden's speeches -initially full of statements of his leadership qualities and capabilities- along with his campaign strategy shifted towards bringing up COVID-19, the pandemic, stay-at-home orders, vaccine research, and the sitting president's struggle to contain the virus effectively. Donald Trump's strategy was not effected as much as expected, with his campaign strategy focused on public rallies to energize the support of his followers while highlighting the economic strengths of the United States pre-pandemic.
+
+## Methods
+
+### Hand Coded Classification
+
+In order to guarantee classification labels for each speech, we need to manually read each document to determine if there was any mention of COVID-related topics discussed. Originally, our project did not fragment speeches to smaller subsections. This made it difficult to properly classify the relevancy of COVID in these speeches, as text samples with over 2000 words would be classified as being COVID-related if even one sentence made a reference. With text broken down to manageable sizes, we can now determine if specific sections of a speech discussed the pandemic more appropriately. 
+
+Our hand coded data consists of 100 documents, 50 of them from each presidential candidate to maintain sample consistency. To simplify the process, a python script is run to determine if a text corpus contains sertain keywords and classifies the text based on its findings. This was verified to be accurate by hand coding a sample of similar size and getting identical results. Using our hand coded data, we developed a model using K-Fold Cross validation, training and validating our known documents 5 times. We fit our data and predicted using logistic regression. This form of classification is simple to perform on small datasets, and we are able to use model weights that have been developed in earlier sections of our project, such as net sentiment, topic name, and prevalence value of covid topics.
+
+Each validation set averaged 75% accuracy on the positive classification. Accuracy for this classification was compared against hand-coded documents that were assigned a 1 if there was at least one occurrence of the words “covid-19”, “coronavirus”, “pandemic”, or “vaccine”. The word “shutdown” and related words were not counted, as shutdowns were stagnant, with New York being the first state to issue shutdown orders. Additionally, the word shutdown could be in reference to the shutdown of an industry due to reasons not related to the pandemic.
+
+Our test data was fit onto the highest scoring validation set, which scored a .749 accuracy. Results of our classification are shown in the image above. Our test data was compared in the same manner as the validation sets, where a python script classified each speech based on keywords, even if the topic did not encompass the entire corpus. Should we choose to use only the speeches whose majority topic was about COVID, we would have an insufficient number of documents to produce significant results. Our confusion matrix shows a significant quantity of false positives and false negatives; however, for a classifier that had to choose between 20+ topics, an accuracy greater than or equal to 75% signifies that the model is working properly. Our recall is also higher than our precision, as false negatives are more important to classify correctly. Despite having a significant p-value, a confusion matrix does not accurately reflect any results. As such, we will move onto a bette rhypothesis test below.
+
+![Confusion Matrix of hand coded classes](img/cm.png)
+<div style="text-align: center;">
+<small><i>Figure 14: Confusion Matrix of hand coded classes</i></small>
+</div>
+<br/>
+
+### Chi-squared Test
+
+The Chi-squared test with Yates' continuity correction is a statistical method used to assess whether there is a significant association between two categorical variables. In this case, we measure the timing of speeches before or after February 11, 2020 and the presence or absence of COVID-related topics. The correction adjusts the traditional Chi-squared test to account for the discrete nature of the data, especially when sample sizes are small, reducing the risk of overestimating statistical significance. This correction modifies the calculation of the difference between observed and expected frequencies, making the test more conservative and less prone to Type I errors. When applied, the test evaluates whether any observed differences in the proportion of COVID-related topics before and after the specified date are statistically meaningful or could have occurred by chance.
+
+The goal of this section is to compare the frequency of COVID-related topics in speeches by Biden and Trump before and after February 11, 2020, to determine if there was a significant change in the emphasis on COVID-19 in their rhetoric over time. By constructing contingency tables for each candidate and performing the Chi-squared test with Yates' correction, the analysis aims to identify whether the proportion of COVID-related content significantly increased or decreased, providing insights into how each candidate's messaging evolved during the early stages of the pandemic. This statistical approach helps to quantify shifts in discourse and assess whether these changes are statistically significant rather than due to random variation.
+
+![Results of Chi2 test on Biden's speeches](img/chi2_biden.png)
+<div style="text-align: center;">
+<small><i>Figure 15: Results of Chi2 test on Biden's speeches</i></small>
+</div>
+<br/>
+
+![Results of Chi2 test on Trump's speeches](img/chi2_trump.png)
+<div style="text-align: center;">
+<small><i>Figure 16: Results of Chi2 test on Trump's speeches</i></small>
+</div>
+<br/>
+
+## Results
+
+The results indicate highly significant associations between speech timing and COVID-19 topic relevance for both candidates (p-values < 2.2e-16). Specifically, for Biden, COVID-related topics surged to 345 out of 1632 speeches, suggesting a marked increase in COVID-19 coverage during the pandemic period. Similarly, Trump’s COVID-related mentions increased to 196 out of 3280 speeches after February 11. We reject the null hypothesis stated at the beginning of our project. These findings support the alternate hypothesis that the probability of COVID-19 being a topic in presidential speeches increased following the pandemic onset date, reflecting a substantial shift in discourse focus.
+
+The results of our model change if we decide to use all topic names as one-hot encoded values. We were unable to implement this in our project, as too many errors regarding the logistic regression equation occurred. Instead, topic names were omitted from the analysis. Additionally, the rhetoric of presidential speeches that are broadcast to the public are generally more positive, as these are widely viewed by most audiences through news sources or through broadcasts. If we were to implement sentiment analysis on other forms of media, such as tweets, we would see significantly more negative rhetoric on the subject of the pandemic.
+
+## Conclusion
+
+In conclusion, this project developed multiple analyses from our data, from identifying net sentiment analyses of each president’s speech patterns to identifying whether presidential rhetoric changed during the COVID-19 pandemic. This project has taught us useful skills related to implementing text-as-data projects using R. in comparison to other programming languages, R provides an efficient programming setting with packages that optimize performance for modifying and analyzing data structures. By processing data using Latent Dirichlet allocation and structural topic models, summarization of text corpora can help identify hidden patterns that are not found via conventional text reading.
+
+## Works Cited
+
+Chalkiadakis, I., Anglès d'Auriac, L., Peters, G., & Frau-Meigs, D. (2025). A text dataset of campaign speeches of the main tickets in the 2020 US presidential election [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.14785782.
+
+Ethan Xia, Han Yue, and Hongfu Liu. 2021. Tweet Sentiment Analysis of the 2020 U.S.
+Presidential Election. In Companion Proceedings of the Web Conference 2021 (WWW '21). Association for Computing Machinery, New York, NY, USA, 367–371. https://doi.org/10.1145/3442442.3452322
+
+Ali, R.H., Pinto, G., Lawrie, E. et al. A large-scale sentiment analysis of tweets pertaining to
+the 2020 US presidential election. J Big Data 9, 79 (2022). https://doi.org/10.1186/s40537-022-00633-z
+
+<br><br><br>
+*Originally a final project for DSC 161 at the University of California, San Diego*
